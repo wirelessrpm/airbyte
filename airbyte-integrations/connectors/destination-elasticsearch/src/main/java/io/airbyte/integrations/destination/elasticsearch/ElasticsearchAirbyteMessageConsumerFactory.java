@@ -9,6 +9,8 @@ import co.elastic.clients.elasticsearch._core.bulk.IndexResponseItem;
 import co.elastic.clients.elasticsearch._types.ErrorCause;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
@@ -128,6 +130,10 @@ public class ElasticsearchAirbyteMessageConsumerFactory {
           connection.createIndexIfMissing(config.getTempIndexName());
         } else {
           connection.createIndexIfMissing(config.getIndexName());
+          if (config.getSyncMode() == DestinationSyncMode.OVERWRITE) {
+            connection.deleteIndexIfPresent(config.getIndexName());
+            connection.createIndexIfMissing(config.getIndexName());
+          }
         }
       }
     };
